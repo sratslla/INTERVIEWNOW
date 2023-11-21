@@ -1,0 +1,8 @@
+.CodeMirror{
+    min-height: calc(90vh - 20px);
+    font-size: 20px;
+    line-height: 1.6;
+    padding-top: 20px;
+    background: rgb(14,20,30);
+    color: brown;
+}

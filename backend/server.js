@@ -30,7 +30,7 @@ function getAllConnectedClients(roomId) {
 io.on("connection", (socket) => {
 	console.log("socket connected", socket.id);
 
-	socket.on(ACTIONS.JOIN, ({ roomId, userName }) => {
+	socket.on(ACTIONS.JOIN, ({ roomId, userName, offer }) => {
 		userSocketMap[socket.id] = userName;
 		socket.join(roomId);
 		const clients = getAllConnectedClients(roomId);
@@ -40,6 +40,11 @@ io.on("connection", (socket) => {
 				userName,
 				socketId: socket.id,
 			});
+			io.to(roomId).emit("incomming:call", {
+				from: socket.id,
+				offer,
+			});
+			console.log("offerasdfadsf", offer);
 		});
 	});
 
@@ -49,6 +54,37 @@ io.on("connection", (socket) => {
 
 	socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
 		io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
+	});
+
+	// Video Call
+	// socket.on(ACTIONS.CALL, ({ roomId, offer }) => {
+	// 	io.to(roomId).emit("incomming:call", {
+	// 		from: socket.id,
+	// 		offer,
+	// 	});
+	// });
+
+	socket.on("call:accepted", ({ to, ans }) => {
+		console.log("from", socket.id);
+		console.log("ans", ans);
+		io.to(to).emit("call:accepted", {
+			from: socket.id,
+			ans: ans,
+		});
+	});
+
+	socket.on("peer:nego:needed", ({ to, offer }) => {
+		io.to(to).emit("peer:nego:needed", {
+			from: socket.id,
+			offer,
+		});
+	});
+
+	socket.on("peer:nego:done", ({ to, ans }) => {
+		io.to(to).emit("peer:nego:final", {
+			from: socket.id,
+			ans,
+		});
 	});
 
 	socket.on("disconnecting", () => {

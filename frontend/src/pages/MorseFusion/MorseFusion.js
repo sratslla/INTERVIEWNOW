@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-// import MorseFusionLogo from "../../Assets/MorseFusionLogo3.png";
-// import MF_Logo from "../../Assets/morseFusionLogo.mp4";
 import { v4 as uuidV4 } from "uuid";
 import { toast } from "react-hot-toast";
 import "./MorseFusion.css";
 import { useNavigate } from "react-router-dom";
-// import Navbar from '../../Components/NavBar/Navbar'
 
 const MorseFusion = () => {
 	const navigate = useNavigate();

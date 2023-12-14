@@ -52,7 +52,7 @@ const Chat = ({ socketRef, username, roomId }) => {
 	return (
 		<div className="chat-window">
 			<div className="chat-header">
-				<p>Chat Box</p>
+				<p>CHAT BOX</p>
 			</div>
 			<div className="chat-body">
 				<ScrollToBottom className="message-container">
@@ -62,8 +62,8 @@ const Chat = ({ socketRef, username, roomId }) => {
 								<p>{messageContent.message}</p>
 							</div>
 							<div className="message-meta">
-								<p id="time">{messageContent.time}</p>
 								<p id="author">{messageContent.author}</p>
+								<p id="time">{messageContent.time}</p>
 							</div>
 						</div>
 					))}

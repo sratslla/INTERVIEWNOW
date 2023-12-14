@@ -6,17 +6,8 @@
 	position: absolute;
 	top: 10vh;
 	left: 80vw;
-	justify-content: space-around;
+	justify-content: space-between;
 	align-items: center;
-	/* flex-wrap: wrap; */
+	flex-wrap: wrap;
 	overflow: hidden;
-	/* resize: both; */
-}
-.video {
-	height: 20vh;
-	width: 25vh;
-	border-radius: 8px;
-	background: red;
-	background: url(https://images.hindustantimes.com/tech/img/2022/01/22/960x540/Zoom_CC_Button_-_manual_1614250317606_1642848009719.jpg);
-	background-size: 100% 100%;
 }

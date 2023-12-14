@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./EditorPage.css";
-import MorseFusionLogo from "../../Assets/MorseFusionLogo2.jpg";
 import Client from "../../Components/Editor/Client";
 import Editor from "../../Components/Editor/Editor";
 import { language_options } from "../../Components/Editor/languageOptions";
@@ -30,7 +29,6 @@ import {
 	useParams,
 } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import Video from "../../Components/Video/Video";
 import Container from "../../Components/WhiteBoard/Container";
 import Chat from "../../Components/Chat/Chat";
 
@@ -38,13 +36,15 @@ const Videoo = (props) => {
 	const ref = useRef();
 
 	useEffect(() => {
-		props.peer.on("stream", (stream) => {
-			ref.current.srcObject = stream;
-		});
-	}, [props.peer]);
+		if (props.peer.peer) {
+			props.peer.peer.on("stream", (stream) => {
+				ref.current.srcObject = stream;
+			});
+		}
+	}, [props.peer.peer]);
 
 	return (
-		<video ref={ref} autoPlay style={{ width: "25vw", height: "20vh" }} />
+		<video ref={ref} autoPlay style={{ width: "20vw", height: "25vh" }} />
 	);
 };
 
@@ -93,7 +93,7 @@ const EditorPage = () => {
 			socketRef.current.on("connect_failed", (err) => handleErrors(err));
 
 			const handleErrors = (e) => {
-				console.log("socket error", e);
+				// console.log("socket error", e);
 				toast.error("Socket connection failed, try again later");
 				reactNavigator("/");
 			};
@@ -109,15 +109,15 @@ const EditorPage = () => {
 				({ clients, userName, socketId }) => {
 					if (userName !== location.state?.userName) {
 						toast.success(`${userName} joined the room`);
-						console.log(`${userName} joined the room`);
+						// console.log(`${userName} joined the room`);
 					}
 					setClients(clients);
 					socketRef.current.emit(ACTIONS.SYNC_CODE, {
 						code: codeRef.current,
 						socketId,
 					});
-					console.log("Code Sent", codeRef.current);
-					console.log("Socket Joined", userName);
+					// console.log("Code Sent", codeRef.current);
+					// console.log("Socket Joined", userName);
 				}
 			);
 
@@ -125,7 +125,7 @@ const EditorPage = () => {
 				setOutPutOpen(true);
 				setOutput("Processing");
 				setProgress(progress + 30);
-				console.log("DONE");
+				// console.log("DONE");
 			});
 			socketRef.current.on(ACTIONS.OUTPUT_CLOSED, () => {
 				setOutPutOpen(false);
@@ -133,18 +133,18 @@ const EditorPage = () => {
 			socketRef.current.on(ACTIONS.CODE_COMPILED, ({ socket_output }) => {
 				setOutput(socket_output);
 				setProgress(100);
-				console.log("OUtput received in sockets", socket_output);
+				// console.log("OUtput received in sockets", socket_output);
 			});
 			navigator.mediaDevices
 				.getUserMedia({ video: true, audio: true })
 				.then((stream) => {
 					userVideo.current.srcObject = stream;
-					console.log("hsjkdfhakjsdhfjkasdf");
+					// console.log("hsjkdfhakjsdhfjkasdf");
 					socketRef.current.emit("join_room", roomId);
 					socketRef.current.on("all_users", (users) => {
 						const peers = [];
-						console.log(socketRef.current.id);
-						console.log(users);
+						// console.log(socketRef.current.id);
+						// console.log(users);
 						users.forEach((userID) => {
 							if (userID.socketId !== socketRef.current.id) {
 								const peer = createPeer(
@@ -153,6 +153,10 @@ const EditorPage = () => {
 									stream
 								);
 								peersRef.current.push({
+									peerID: userID.socketId,
+									peer,
+								});
+								peers.push({
 									peerID: userID.socketId,
 									peer,
 								});
@@ -172,8 +176,11 @@ const EditorPage = () => {
 							peerID: payload.callerID,
 							peer,
 						});
-
-						setPeers((users) => [...users, peer]);
+						const peerObj = {
+							peer,
+							peerID: payload.callerID,
+						};
+						setPeers((users) => [...users, peerObj]);
 					});
 
 					socketRef.current.on(
@@ -195,6 +202,18 @@ const EditorPage = () => {
 							(client) => client.socketId !== socketId
 						);
 					});
+					// Video disconeect Handle
+					const peerObj = peersRef.current.find(
+						(p) => p.peerID === socketId
+					);
+					if (peerObj) {
+						peerObj.peer.destroy();
+					}
+					const peers = peersRef.current.filter(
+						(p) => p.peerID !== socketId
+					);
+					peersRef.current = peers;
+					setPeers(peers);
 				}
 			);
 		};
@@ -254,12 +273,6 @@ const EditorPage = () => {
 	function leaveRoom() {
 		reactNavigator("/");
 	}
-	const openSetting = () => {
-		console.log("Chat Box opened");
-	};
-	// const openWhiteBoard = () => {
-	// 	console.log("WhiteBoard opened");
-	// };
 	const outputBoxClose = () => {
 		socketRef.current.emit(ACTIONS.OUTPUT_CLOSED, { roomId });
 	};
@@ -274,8 +287,8 @@ const EditorPage = () => {
 			source_code: btoa(codeRef.current),
 			stdin: "",
 		};
-		console.log("Run Code");
-		console.log(codeRef.current);
+		// console.log("Run Code");
+		// console.log(codeRef.current);
 
 		const options = {
 			method: "POST",
@@ -290,10 +303,10 @@ const EditorPage = () => {
 			},
 			data: formData,
 		};
-		console.log(options);
+		// console.log(options);
 
 		axios.request(options).then(function (response) {
-			console.log("res.data", response.data);
+			// console.log("res.data", response.data);
 			const token = response.data.token;
 			checkStatus(token);
 			setProgress(progress + 30);
@@ -342,8 +355,8 @@ const EditorPage = () => {
 				// setProcessing(false);
 				// setOutputDetails(response.data);
 				// showSuccessToast(`Compiled Successfully!`);
-				console.log("response.data", response.data);
-				console.log(atob(response.data.stdout));
+				// console.log("response.data", response.data);
+				// console.log(atob(response.data.stdout));
 				setOutput(atob(response.data.stdout));
 				let socket_output = atob(response.data.stdout);
 				socketRef.current.emit(ACTIONS.CODE_COMPILED, {
@@ -365,8 +378,8 @@ const EditorPage = () => {
 	}
 
 	const onSelectChange = (selectedOption) => {
-		console.log("language changed");
-		console.log(selectedOption);
+		// console.log("language changed");
+		// console.log(selectedOption);
 		setLanguage_id(selectedOption.value);
 		setLanguage_name(selectedOption.label);
 	};
@@ -375,84 +388,56 @@ const EditorPage = () => {
 		<div className="mf-main-container">
 			<div className="mf-nav-container">
 				<div className="mf-nav-logo">INTERVIEW NOW</div>
-				<div className="mf-connected">
-					<h3 style={{ padding: "15px" }}>Connected:-</h3>
-				</div>
-				<div className="mf-nav-client-list">
-					{clients.map((client) => (
-						<Client
-							key={client.socketId}
-							userName={client.userName}
-						/>
-					))}
-				</div>
-				<Select
-					options={dropDownOptions}
-					defaultValue={dropDownOptions[0]}
-					onChange={(selectedOption) =>
-						onSelectChange(selectedOption)
-					}
-				/>
-				)
-				<div>
-					<FaChalkboardUser
-						className="mf-chat-icon"
-						onClick={() => {
-							setWhiteBoardOpen(!whiteBoardOpen);
-						}}
-						style={{ padding: "5px" }}
+				<div className="mf-nav-right">
+					<div className="mf-connected">
+						<h3 style={{ padding: "15px" }}>Connected:-</h3>
+					</div>
+					<div className="mf-nav-client-list">
+						{clients.map((client) => (
+							<Client
+								key={client.socketId}
+								userName={client.userName}
+							/>
+						))}
+					</div>
+					<Select
+						options={dropDownOptions}
+						defaultValue={dropDownOptions[0]}
+						onChange={(selectedOption) =>
+							onSelectChange(selectedOption)
+						}
 					/>
-					<BsChatSquareText
-						className="mf-chat-icon"
-						onClick={() => {
-							setOpen(!open);
-						}}
-						style={{ padding: "5px" }}
-					/>
-					{/* <IoSettingsSharp
-						className="mf-chat-icon"
-						onClick={openSetting}
-					/> */}
-				</div>
-				{/* <div>
-					{videoOn ? (
-						<CiVideoOn
+					)
+					<div>
+						<FaChalkboardUser
 							className="mf-chat-icon"
 							onClick={() => {
-								setVideoOn(false);
+								setWhiteBoardOpen(!whiteBoardOpen);
 							}}
+							style={{ padding: "5px" }}
 						/>
-					) : (
-						<CiVideoOff
+						<BsChatSquareText
 							className="mf-chat-icon"
 							onClick={() => {
-								setVideoOn(true);
+								setOpen(!open);
 							}}
+							style={{ padding: "5px" }}
 						/>
-					)}
-					{micOn ? (
-						<CiMicrophoneOn
-							className="mf-chat-icon"
-							onClick={() => {
-								setMicOn(false);
-							}}
-						/>
-					) : (
-						<CiMicrophoneOff
-							className="mf-chat-icon"
-							onClick={() => {
-								setMicOn(true);
-							}}
-						/>
-					)}
-				</div> */}
-				<div>
-					<button className="mf-nav-btn-copy" onClick={copyRoomID}>
-						Copy Room ID
-					</button>
-					<button className="mf-nav-btn-leave" onClick={leaveRoom}>
-						Leave Room
-					</button>
+					</div>
+					<div>
+						<button
+							className="mf-nav-btn-copy"
+							onClick={copyRoomID}
+						>
+							Copy Room ID
+						</button>
+						<button
+							className="mf-nav-btn-leave"
+							onClick={leaveRoom}
+						>
+							Leave Room
+						</button>
+					</div>
 				</div>
 			</div>
 			<div className="mf-code-container">
@@ -496,19 +481,16 @@ const EditorPage = () => {
 					ref={userVideo}
 					autoPlay
 					muted
-					style={{ width: "25vw", height: "20vh" }}
+					style={{ width: "20vw", height: "25vh" }}
 				/>
-				{peers.map((peer, index) => {
-					return <Videoo key={index} peer={peer} />;
+				{peers.map((peer) => {
+					return <Videoo key={peer.peerID} peer={peer} />;
 				})}
 			</div>
 			<div className="mf-bottom-button">
 				<button className="btn-runtest" onClick={run}>
-					Run
+					RUN CODE
 				</button>
-				{/* <button className="btn-runcode" onClick={runCode}>
-					Run Code
-				</button> */}
 			</div>
 			<div
 				className={`mf-chat-container ${open ? "active" : "inactive"}`}

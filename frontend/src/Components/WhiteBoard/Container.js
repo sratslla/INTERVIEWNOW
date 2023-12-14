@@ -17,7 +17,7 @@ const Container = ({ socketRef, roomId }) => {
 	};
 
 	return (
-		<div className="container">
+		<div className="wb-containers">
 			<div className="tools-section">
 				<div className="color-picker-container">
 					Select Brush Color : &nbsp;

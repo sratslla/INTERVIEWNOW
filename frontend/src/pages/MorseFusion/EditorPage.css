@@ -50,38 +50,63 @@
 	color: white;
 	font-size: x-large;
 }
+.mf-nav-right {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px;
+}
 .mf-chat-icon {
 	color: white;
 	width: 40px;
 	height: auto;
 }
 .mf-chat-icon:hover {
-	color: green;
+	color: #1ba94c;
 }
 .mf-connected {
 	display: flex;
 	flex: row;
 	justify-content: space-between;
 	align-items: center;
-	padding-left: 30rem;
+	/* padding-left: 30rem; */
 }
 .mf-connected > h3 {
 	padding-left: 15px;
 	color: ivory;
 }
 .mf-nav-client-list {
-	width: 70px;
+	/* width: 70px; */
 	display: flex;
 	flex-direction: row;
 	justify-content: space-around;
 }
 .mf-nav-btn-copy {
-	background-color: green;
+	background-color: #1ba94c;
+	height: 5vh;
+	width: 10vw;
 	color: white;
+	font-weight: bolder;
+}
+.mf-nav-btn-copy:hover {
+	background-color: white;
+	height: 5vh;
+	width: 10vw;
+	color: #1ba94c;
 }
 .mf-nav-btn-leave {
-	background-color: green;
+	background-color: grey;
+	height: 5vh;
+	width: 10vw;
+	font-weight: bolder;
 	color: white;
+}
+.mf-nav-btn-leave:hover {
+	background-color: white;
+	height: 5vh;
+	width: 10vw;
+	color: grey;
 }
 
 .mf-code-container {
@@ -104,18 +129,15 @@
 	align-items: center;
 }
 .btn-runtest {
-	background-color: #99e74c;
-	border-radius: 0.25em;
-	height: 50%;
-	width: 30%;
+	border-radius: 5px;
 	color: black;
+	background-color: #1ba94c;
+	height: 5vh;
+	width: 10vw;
+	font-weight: bolder;
 }
-.btn-runcode {
-	background-color: #99e74c;
-	border-radius: 0.25em;
-	height: 50%;
-	width: 30%;
-	color: black;
+.btn-runtest:hover {
+	background-color: lightgreen;
 }
 .mf-chat-container {
 	position: absolute;
@@ -176,6 +198,9 @@
 .wb-container.active {
 	visibility: visible;
 	opacity: 1;
+	position: absolute;
+	top: 10vh;
+	left: 0vw;
 	min-height: calc(90vh);
 	min-width: calc(80vw);
 	transform: translateY(0);
@@ -253,6 +278,19 @@ section.chat__section {
 	font-size: 16px;
 	outline: none;
 	background: #fbfbfb;
+}
+.mf-video-container {
+	min-height: 80vh;
+	min-width: 20vw;
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	top: 10vh;
+	left: 80vw;
+	justify-content: space-around;
+	align-items: center;
+	flex-wrap: wrap;
+	overflow: hidden;
 }
 
 .message {

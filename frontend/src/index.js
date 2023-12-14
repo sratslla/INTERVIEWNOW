@@ -10,10 +10,6 @@ import EditorPage from "./pages/MorseFusion/EditorPage";
 // import MorseSync from "./pages/MorseSync/MorseSync";
 
 const router = createBrowserRouter([
-	// {
-	// path: "/",
-	// element: <Home />
-	// },
 	{
 		path: "/",
 		element: <MorseFusion />,
@@ -22,14 +18,6 @@ const router = createBrowserRouter([
 		path: "/Editor/:roomId",
 		element: <EditorPage />,
 	},
-	// {
-	// path: "/MorseResume",
-	// element: <MorseResume />,
-	// },
-	// {
-	// path: "/MorseSync",
-	// element: <MorseSync />,
-	// }
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

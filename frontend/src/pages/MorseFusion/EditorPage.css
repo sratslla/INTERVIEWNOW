@@ -1,3 +1,30 @@
+:root {
+	--border-radius: 4px; /* Adjust the value based on your design */
+	--speed: 0.3s; /* Adjust the transition speed based on your preference */
+}
+
+::-webkit-scrollbar {
+	width: 0.5vw;
+}
+
+::-webkit-scrollbar-track {
+	background: black;
+	border: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: green;
+	height: 5vh;
+	border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: green;
+	border: 2px solid white;
+	height: 5vh;
+	border-radius: 20px;
+}
+
 .mf-main-container {
 	position: absolute;
 	top: 0;
@@ -19,8 +46,9 @@
 	justify-content: space-between;
 	align-items: center;
 }
-.mf-nav-logo-image {
-	width: 100px;
+.mf-nav-logo {
+	color: white;
+	font-size: x-large;
 }
 .mf-chat-icon {
 	color: white;
@@ -35,7 +63,7 @@
 	flex: row;
 	justify-content: space-between;
 	align-items: center;
-	padding-left: 55rem;
+	padding-left: 30rem;
 }
 .mf-connected > h3 {
 	padding-left: 15px;
@@ -93,11 +121,11 @@
 	position: absolute;
 	top: 10vh;
 	left: 80vw;
-	min-height: calc(90vh - 20px);
+	min-height: calc(80vh - 20px);
 	min-width: calc(20vw - 20px);
-	background-color: #fff;
+	background-color: #ffffff00;
 	/* border-radius: var(--border-radius); */
-	padding: 10px 20px;
+	/* padding: 10px 20px; */
 	width: 200px;
 }
 
@@ -127,10 +155,64 @@
 .mf-chat-container.active {
 	visibility: visible;
 	opacity: 1;
-	min-height: calc(90vh - 20px);
+	min-height: calc(80vh - 20px);
 	min-width: calc(20vw - 20px);
 	transform: translateY(0);
 	transition: var(--speed) ease;
+}
+.wb-container.inactive {
+	opacity: 0;
+	visibility: hidden;
+	min-height: calc(90vh);
+	min-width: calc(80vw);
+	/* width: 20vw; */
+	background-color: green;
+	position: absolute;
+	top: 10vh;
+	left: 0vw;
+	transform: translateY(-20px);
+	transition: var(--speed) ease;
+}
+.wb-container.active {
+	visibility: visible;
+	opacity: 1;
+	min-height: calc(90vh);
+	min-width: calc(80vw);
+	transform: translateY(0);
+	transition: var(--speed) ease;
+}
+.output-container.inactive {
+	opacity: 0;
+	visibility: hidden;
+	min-height: calc(30vh);
+	min-width: calc(80vw);
+	/* width: 20vw; */
+	background-color: rgb(12, 16, 33);
+	position: absolute;
+	top: 70vh;
+	left: 0vw;
+	transform: translateY(-20px);
+	transition: var(--speed) ease;
+}
+.output-container.active {
+	visibility: visible;
+	opacity: 1;
+	min-height: calc(30vh);
+	min-width: calc(80vw);
+	position: absolute;
+	background: rgb(12, 16, 33);
+	top: 70vh;
+	left: 0vw;
+	transform: translateY(0);
+	transition: var(--speed) ease;
+}
+.output_title {
+	color: white;
+	font-size: xx-large;
+	text-align: center;
+}
+.output {
+	color: white;
 }
 section.chat__section {
 	width: 800px;

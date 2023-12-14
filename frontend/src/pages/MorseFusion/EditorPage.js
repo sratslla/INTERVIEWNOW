@@ -3,12 +3,26 @@ import "./EditorPage.css";
 import MorseFusionLogo from "../../Assets/MorseFusionLogo2.jpg";
 import Client from "../../Components/Editor/Client";
 import Editor from "../../Components/Editor/Editor";
+import { language_options } from "../../Components/Editor/languageOptions";
+import axios from "axios";
 import { BsArrowBarUp, BsChatSquareText } from "react-icons/bs";
 import { IoSettingsSharp } from "react-icons/io5";
+import { FaChalkboardUser } from "react-icons/fa6";
+import { MdOutlineCancel } from "react-icons/md";
+import Select from "react-select";
+import {
+	CiVideoOn,
+	CiVideoOff,
+	CiMicrophoneOn,
+	CiMicrophoneOff,
+} from "react-icons/ci";
 import ReactPlayer from "react-player";
 import { initSocket } from "../../socket";
 import ACTIONS, { JOIN } from "./Actions";
-import peer from "../../service/peer";
+import Peer from "simple-peer";
+import LoadingBar from "react-top-loading-bar";
+import styled from "styled-components";
+// import peer from "../../service/peer";
 import {
 	Navigate,
 	useLocation,
@@ -17,10 +31,37 @@ import {
 } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Video from "../../Components/Video/Video";
+import Container from "../../Components/WhiteBoard/Container";
+import Chat from "../../Components/Chat/Chat";
+
+const Videoo = (props) => {
+	const ref = useRef();
+
+	useEffect(() => {
+		props.peer.on("stream", (stream) => {
+			ref.current.srcObject = stream;
+		});
+	}, [props.peer]);
+
+	return (
+		<video ref={ref} autoPlay style={{ width: "25vw", height: "20vh" }} />
+	);
+};
+
+const videoConstraints = {
+	height: window.innerHeight / 2,
+	width: window.innerWidth / 2,
+};
+const dropDownOptions = [
+	{ value: language_options[0].id, label: language_options[0].name },
+	{ value: language_options[1].id, label: language_options[1].name },
+	{ value: language_options[2].id, label: language_options[2].name },
+	// { value: language_options[3].id, label: language_options[3].name },
+	// { value: language_options[4].id, label: language_options[4].name },
+];
 
 const EditorPage = () => {
 	const socketRef = useRef(null);
-	const [remoteSocketId, setRemoteSocketId] = useState(null);
 	const codeRef = useRef(null);
 	const message__area = useRef(null);
 	const location = useLocation();
@@ -28,92 +69,22 @@ const EditorPage = () => {
 	const reactNavigator = useNavigate();
 	const [clients, setClients] = useState([]);
 	const [open, setOpen] = useState(false);
-	const [myStream, setMyStream] = useState(null);
-	const [remoteStream, setRemoteStream] = useState();
+	const [whiteBoardOpen, setWhiteBoardOpen] = useState(false);
+	const [outPutOpen, setOutPutOpen] = useState(false);
+	const [output, setOutput] = useState("");
+	const [videoOn, setVideoOn] = useState(true);
+	const [micOn, setMicOn] = useState(true);
+	const [language_id, setLanguage_id] = useState(63);
+	const [language_name, setLanguage_name] = useState("javascript");
 
-	// const [placeHolder, setPlaceHolder] = useState("Write a message...");
+	const peersRef = useRef([]);
+	const userVideo = useRef();
+	const [peers, setPeers] = useState([]);
 
-	// Incoming Call
-	const handleIncomingCall = useCallback(
-		async ({ from, offer }) => {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
-				video: true,
-			});
-			console.log("stream - ", stream);
-			setMyStream(stream);
-			console.log(myStream);
-			setRemoteSocketId(from);
-			console.log("offer", offer);
-			console.log(`Incoming Call from`, from, offer);
-			const ans = await peer.getAnswer(offer);
-			console.log("Ans - ", ans);
-			socketRef.current.emit("call:accepted", { to: from, ans });
-		},
-		[myStream]
-	);
+	const [progress, setProgress] = useState(0);
 
-	const sendStreams = useCallback(async () => {
-		console.log("send streams inside -- ", myStream);
-		const sendStreams_stream = await navigator.mediaDevices.getUserMedia({
-			audio: true,
-			video: true,
-		});
-		for (const track of sendStreams_stream.getTracks()) {
-			peer.peer.addTrack(track, sendStreams_stream);
-		}
-	}, [myStream]);
-
-	// Accepting Call
-	const handleCallAccepted = useCallback(
-		({ from, ans }) => {
-			console.log("Call Accepted with answer:", ans);
-			try {
-				peer.setLocalDescription(ans);
-				console.log("Local description set successfully");
-			} catch (error) {
-				console.error("Error setting local description:", error);
-			}
-			sendStreams();
-		},
-		[sendStreams]
-	);
-
-	const handleNegoNeeded = useCallback(async () => {
-		const offer = await peer.getOffer();
-		socketRef.current.emit("peer:nego:needed", {
-			to: remoteSocketId,
-			offer,
-		});
-	}, [remoteSocketId]);
-
-	useEffect(() => {
-		peer.peer.addEventListener("negotiationneeded", handleNegoNeeded);
-		return () => {
-			peer.peer.removeEventListener(
-				"negotiationneeded",
-				handleNegoNeeded
-			);
-		};
-	}, [handleNegoNeeded]);
-
-	const handleNegoNeedIncoming = useCallback(async ({ from, offer }) => {
-		const ans = await peer.getAnswer(offer);
-		socketRef.current.emit("peer:nego:done", { to: from, ans });
-	}, []);
-
-	const handleNegoNeedFinal = useCallback(async ({ ans }) => {
-		await peer.setLocalDescription(ans);
-	}, []);
-
-	useEffect(() => {
-		peer.peer.addEventListener("track", async (ev) => {
-			const remoteStream = ev.streams;
-			console.log("GOT TRACKS!!");
-			console.log("Remote Stream 0 -- ", remoteStream[0]);
-			setRemoteStream(remoteStream[0]);
-		});
-	}, []);
+	const [username, setUsername] = useState("");
+	const [room, setRoom] = useState("");
 
 	useEffect(() => {
 		const init = async () => {
@@ -126,28 +97,17 @@ const EditorPage = () => {
 				toast.error("Socket connection failed, try again later");
 				reactNavigator("/");
 			};
-			// Video Stream
-			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
-				video: true,
-			});
-
-			const offer = await peer.getOffer();
-			console.log("init function stream", stream);
-			// socketRef.current.emit(ACTIONS.CALL, { roomId, offer });
-			setMyStream(stream);
 
 			socketRef.current.emit(ACTIONS.JOIN, {
 				roomId,
 				userName: location.state?.userName,
-				offer,
 			});
 
 			// Socket JOINED
 			socketRef.current.on(
 				ACTIONS.JOINED,
 				({ clients, userName, socketId }) => {
-					if (userName != location.state?.userName) {
+					if (userName !== location.state?.userName) {
 						toast.success(`${userName} joined the room`);
 						console.log(`${userName} joined the room`);
 					}
@@ -156,22 +116,76 @@ const EditorPage = () => {
 						code: codeRef.current,
 						socketId,
 					});
-					console.log("Socket Joined");
+					console.log("Code Sent", codeRef.current);
+					console.log("Socket Joined", userName);
 				}
 			);
-			setMyStream(stream);
 
-			// Video Incoming Call
-			socketRef.current.on("incomming:call", handleIncomingCall);
+			socketRef.current.on(ACTIONS.RUN_CODE, () => {
+				setOutPutOpen(true);
+				setOutput("Processing");
+				setProgress(progress + 30);
+				console.log("DONE");
+			});
+			socketRef.current.on(ACTIONS.OUTPUT_CLOSED, () => {
+				setOutPutOpen(false);
+			});
+			socketRef.current.on(ACTIONS.CODE_COMPILED, ({ socket_output }) => {
+				setOutput(socket_output);
+				setProgress(100);
+				console.log("OUtput received in sockets", socket_output);
+			});
+			navigator.mediaDevices
+				.getUserMedia({ video: true, audio: true })
+				.then((stream) => {
+					userVideo.current.srcObject = stream;
+					console.log("hsjkdfhakjsdhfjkasdf");
+					socketRef.current.emit("join_room", roomId);
+					socketRef.current.on("all_users", (users) => {
+						const peers = [];
+						console.log(socketRef.current.id);
+						console.log(users);
+						users.forEach((userID) => {
+							if (userID.socketId !== socketRef.current.id) {
+								const peer = createPeer(
+									userID.socketId,
+									socketRef.current.id,
+									stream
+								);
+								peersRef.current.push({
+									peerID: userID.socketId,
+									peer,
+								});
+								peers.push(peer);
+							}
+						});
+						setPeers(peers);
+					});
 
-			socketRef.current.on("call:accepted", handleCallAccepted);
+					socketRef.current.on("user_joined", (payload) => {
+						const peer = addPeer(
+							payload.signal,
+							payload.callerID,
+							stream
+						);
+						peersRef.current.push({
+							peerID: payload.callerID,
+							peer,
+						});
 
-			socketRef.current.on("peer:nego:needed", handleNegoNeedIncoming);
+						setPeers((users) => [...users, peer]);
+					});
 
-			socketRef.current.on("peer:nego:final", handleNegoNeedFinal);
-
-			// Listening for disconnected
-
+					socketRef.current.on(
+						"receiving returned signal",
+						(payload) => {
+							const item = peersRef.current.find(
+								(p) => p.peerID === payload.id
+							);
+							item.peer.signal(payload.signal);
+						}
+					);
+				});
 			socketRef.current.on(
 				ACTIONS.DISCONNECTED,
 				({ socketId, userName }) => {
@@ -189,12 +203,44 @@ const EditorPage = () => {
 			socketRef.current.disconnect();
 			socketRef.current.off(ACTIONS.JOINED);
 			socketRef.current.off(ACTIONS.DISCONNECTED);
-			socketRef.current.off("incomming:call", handleIncomingCall);
-			socketRef.current.off("call:accepted", handleCallAccepted);
-			socketRef.current.off("peer:nego:needed", handleNegoNeedIncoming);
-			socketRef.current.off("peer:nego:final", handleNegoNeedFinal);
+			socketRef.current.off(ACTIONS.RUN_CODE);
+			socketRef.current.off(ACTIONS.CODE_COMPILED);
 		};
-	}, [handleNegoNeedFinal, handleNegoNeedIncoming, reactNavigator, roomId]);
+	}, [roomId]);
+
+	function createPeer(userToSignal, callerID, stream) {
+		const peer = new Peer({
+			initiator: true,
+			trickle: false,
+			stream,
+		});
+
+		peer.on("signal", (signal) => {
+			socketRef.current.emit("sending signal", {
+				userToSignal,
+				callerID,
+				signal,
+			});
+		});
+
+		return peer;
+	}
+
+	function addPeer(incomingSignal, callerID, stream) {
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		});
+
+		peer.on("signal", (signal) => {
+			socketRef.current.emit("returning signal", { signal, callerID });
+		});
+
+		peer.signal(incomingSignal);
+
+		return peer;
+	}
 
 	async function copyRoomID() {
 		try {
@@ -211,86 +257,196 @@ const EditorPage = () => {
 	const openSetting = () => {
 		console.log("Chat Box opened");
 	};
-	const runCode = () => {
-		console.log("Run Code");
-	};
-	const runTest = () => {
-		console.log("Run Test");
-	};
-	// const chatBoxEnter = (e) => {
-	// 	if (e.key === "Enter") {
-	// 		sendMessage(e.target.value);
-	// 	}
+	// const openWhiteBoard = () => {
+	// 	console.log("WhiteBoard opened");
 	// };
+	const outputBoxClose = () => {
+		socketRef.current.emit(ACTIONS.OUTPUT_CLOSED, { roomId });
+	};
+	const run = () => {
+		setOutPutOpen(true);
+		setProgress(progress + 30);
+		setOutput("Processing");
+		socketRef.current.emit(ACTIONS.RUN_CODE, { roomId });
+		const formData = {
+			language_id: language_id,
+			// encode source code in base64
+			source_code: btoa(codeRef.current),
+			stdin: "",
+		};
+		console.log("Run Code");
+		console.log(codeRef.current);
 
-	// function sendMessage(message) {
-	// 	let msg = {
-	// 		user: "userName",
-	// 		message: message.trim(),
-	// 	};
-	// 	// Append
-	// 	appendMessage(msg, "outgoing");
-	// 	setPlaceHolder("");
-	// 	// textarea.value = ''
-	// 	// scrollToBottom()
+		const options = {
+			method: "POST",
+			url: "https://judge0-ce.p.rapidapi.com/submissions",
+			params: { base64_encoded: "true", fields: "*" },
+			headers: {
+				"content-type": "application/json",
+				"Content-Type": "application/json",
+				"X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+				"X-RapidAPI-Key":
+					"843d11d34amshec8a22d59e66cb3p16c0a1jsn8f297096e12a",
+			},
+			data: formData,
+		};
+		console.log(options);
 
-	// 	// Send to server
-	// 	// socket.emit('message', msg)
-	// }
-	// function appendMessage(msg, type) {
-	// 	let mainDiv = document.createElement("div");
-	// 	let className = type;
-	// 	mainDiv.classList.add(className, "message");
+		axios.request(options).then(function (response) {
+			console.log("res.data", response.data);
+			const token = response.data.token;
+			checkStatus(token);
+			setProgress(progress + 30);
+		});
+		// .catch((err) => {
+		// 	let error = err.response ? err.response.data : err;
+		// 	// get error status
+		// 	let status = err.response.status;
+		// 	console.log("status", status);
+		// 	if (status === 429) {
+		// 		console.log("too many requests", status);
 
-	// 	let markup = `
-	//         <h4>${msg.user}</h4>
-	//         <p>${msg.message}</p>
-	//     `;
-	// 	mainDiv.innerHTML = markup;
-	// 	message__area.current.appendChild(mainDiv);
-	// }
+		// 		console.log(
+		// 			`Quota of 100 requests exceeded for the Day! Please read the blog on freeCodeCamp to learn how to setup your own RAPID API Judge0!`,
+		// 			10000
+		// 		);
+		// 	}
+		// 	// setProcessing(false);
+		// 	console.log("catch block...", error);
+		// });
+	};
 
-	// Recieve messages
-	// socket.on('message', (msg) => {
-	//     appendMessage(msg, 'incoming')
-	//     scrollToBottom()
-	// })
+	const checkStatus = async (token) => {
+		const options = {
+			method: "GET",
+			url: "https://judge0-ce.p.rapidapi.com/submissions" + "/" + token,
+			params: { base64_encoded: "true", fields: "*" },
+			headers: {
+				"X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+				"X-RapidAPI-Key":
+					"843d11d34amshec8a22d59e66cb3p16c0a1jsn8f297096e12a",
+			},
+		};
+		try {
+			let response = await axios.request(options);
+			let statusId = response.data.status?.id;
+
+			// Processed - we have a result
+			if (statusId === 1 || statusId === 2) {
+				// still processing
+				setTimeout(() => {
+					checkStatus(token);
+				}, 2000);
+				return;
+			} else {
+				// setProcessing(false);
+				// setOutputDetails(response.data);
+				// showSuccessToast(`Compiled Successfully!`);
+				console.log("response.data", response.data);
+				console.log(atob(response.data.stdout));
+				setOutput(atob(response.data.stdout));
+				let socket_output = atob(response.data.stdout);
+				socketRef.current.emit(ACTIONS.CODE_COMPILED, {
+					roomId,
+					socket_output,
+				});
+				setProgress(100);
+				return;
+			}
+		} catch (err) {
+			console.log("err", err);
+			//   setProcessing(false);
+			//   showErrorToast();
+		}
+	};
 
 	if (!location.state) {
 		return <Navigate to="/" />;
 	}
 
+	const onSelectChange = (selectedOption) => {
+		console.log("language changed");
+		console.log(selectedOption);
+		setLanguage_id(selectedOption.value);
+		setLanguage_name(selectedOption.label);
+	};
+
 	return (
 		<div className="mf-main-container">
 			<div className="mf-nav-container">
-				<div className="mf-nav-logo">
-					<img
-						className="mf-nav-logo-image"
-						src={MorseFusionLogo}
-					></img>
-				</div>
+				<div className="mf-nav-logo">INTERVIEW NOW</div>
 				<div className="mf-connected">
-					<h3>Connected:-</h3>
-					<div className="mf-nav-client-list">
-						{clients.map((client) => (
-							<Client
-								key={client.socketId}
-								userName={client.userName}
-							/>
-						))}
-					</div>
+					<h3 style={{ padding: "15px" }}>Connected:-</h3>
 				</div>
+				<div className="mf-nav-client-list">
+					{clients.map((client) => (
+						<Client
+							key={client.socketId}
+							userName={client.userName}
+						/>
+					))}
+				</div>
+				<Select
+					options={dropDownOptions}
+					defaultValue={dropDownOptions[0]}
+					onChange={(selectedOption) =>
+						onSelectChange(selectedOption)
+					}
+				/>
+				)
 				<div>
+					<FaChalkboardUser
+						className="mf-chat-icon"
+						onClick={() => {
+							setWhiteBoardOpen(!whiteBoardOpen);
+						}}
+						style={{ padding: "5px" }}
+					/>
 					<BsChatSquareText
 						className="mf-chat-icon"
 						onClick={() => {
 							setOpen(!open);
 						}}
+						style={{ padding: "5px" }}
 					/>
-					<IoSettingsSharp
+					{/* <IoSettingsSharp
 						className="mf-chat-icon"
 						onClick={openSetting}
-					/>
+					/> */}
+				</div>
+				{/* <div>
+					{videoOn ? (
+						<CiVideoOn
+							className="mf-chat-icon"
+							onClick={() => {
+								setVideoOn(false);
+							}}
+						/>
+					) : (
+						<CiVideoOff
+							className="mf-chat-icon"
+							onClick={() => {
+								setVideoOn(true);
+							}}
+						/>
+					)}
+					{micOn ? (
+						<CiMicrophoneOn
+							className="mf-chat-icon"
+							onClick={() => {
+								setMicOn(false);
+							}}
+						/>
+					) : (
+						<CiMicrophoneOff
+							className="mf-chat-icon"
+							onClick={() => {
+								setMicOn(true);
+							}}
+						/>
+					)}
+				</div> */}
+				<div>
 					<button className="mf-nav-btn-copy" onClick={copyRoomID}>
 						Copy Room ID
 					</button>
@@ -303,63 +459,67 @@ const EditorPage = () => {
 				<Editor
 					socketRef={socketRef}
 					roomId={roomId}
+					language_name={language_name}
 					onCodeChange={(code) => {
 						codeRef.current = code;
 					}}
 				/>
 			</div>
-			<div className="mf-video-container">
-				{myStream && <button onClick={sendStreams}>Send Stream</button>}
-				{myStream && (
-					<ReactPlayer
-						playing
-						muted
-						height="20vh"
-						width="25vw"
-						url={myStream}
-					/>
-				)}
-				{remoteStream && (
-					<ReactPlayer
-						playing
-						muted
-						height="20vh"
-						width="25vw"
-						url={remoteStream}
-					/>
-				)}
+			<div
+				className={`wb-container ${
+					whiteBoardOpen ? "active" : "inactive"
+				}`}
+			>
+				<Container socketRef={socketRef} roomId={roomId} />
 			</div>
-			{/* <Video /> */}
+			<div
+				className={`output-container ${
+					outPutOpen ? "active" : "inactive"
+				}`}
+			>
+				<LoadingBar
+					color="#4ec138"
+					progress={progress}
+					onLoaderFinished={() => setProgress(0)}
+				/>
+				<div className="output_title">
+					OUTPUT
+					<MdOutlineCancel
+						className="mf-chat-icon"
+						onClick={outputBoxClose}
+					/>
+				</div>
+				<div className="output">{output}</div>
+			</div>
+			<div className="mf-video-container">
+				<video
+					ref={userVideo}
+					autoPlay
+					muted
+					style={{ width: "25vw", height: "20vh" }}
+				/>
+				{peers.map((peer, index) => {
+					return <Videoo key={index} peer={peer} />;
+				})}
+			</div>
 			<div className="mf-bottom-button">
-				<button className="btn-runtest" onClick={runTest}>
-					Run Test
+				<button className="btn-runtest" onClick={run}>
+					Run
 				</button>
-				<button className="btn-runcode" onClick={runCode}>
+				{/* <button className="btn-runcode" onClick={runCode}>
 					Run Code
-				</button>
+				</button> */}
 			</div>
 			<div
 				className={`mf-chat-container ${open ? "active" : "inactive"}`}
 			>
-				{/* <div>This is where the chat will go</div> */}
-				<section className="chat__section">
-					{/* <div className="brand">
-                    <h1>Wassup</h1>
-                </div> */}
-					<div ref={message__area} className="message__area"></div>
-					<div>
-						<textarea
-							id="textarea"
-							cols="30"
-							rows="1"
-							// placeholder={placeHolder}
-							// onKeyPress={chatBoxEnter}
-						></textarea>
-					</div>
-				</section>
+				<Chat
+					socketRef={socketRef}
+					username={clients}
+					roomId={roomId}
+				/>
 			</div>
 		</div>
 	);
 };
-
 export default EditorPage;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import MorseFusionLogo from "../../Assets/MorseFusionLogo3.png";
-import MF_Logo from "../../Assets/morseFusionLogo.mp4";
+// import MorseFusionLogo from "../../Assets/MorseFusionLogo3.png";
+// import MF_Logo from "../../Assets/morseFusionLogo.mp4";
 import { v4 as uuidV4 } from "uuid";
 import { toast } from "react-hot-toast";
 import "./MorseFusion.css";
@@ -29,15 +29,15 @@ const MorseFusion = () => {
 		});
 	};
 
-	const [isHovered, setIsHovered] = useState(false);
+	// const [isHovered, setIsHovered] = useState(false);
 
-	const handleMouseEnter = () => {
-		setIsHovered(true);
-	};
+	// const handleMouseEnter = () => {
+	// 	setIsHovered(true);
+	// };
 
-	const handleMouseLeave = () => {
-		setIsHovered(false);
-	};
+	// const handleMouseLeave = () => {
+	// 	setIsHovered(false);
+	// };
 
 	return (
 		<div className="MF-main-container">
@@ -45,21 +45,10 @@ const MorseFusion = () => {
 			<div className="form-container">
 				<div
 					className="logo-container"
-					onMouseEnter={handleMouseEnter}
-					onMouseLeave={handleMouseLeave}
+					// onMouseEnter={handleMouseEnter}
+					// onMouseLeave={handleMouseLeave}
 				>
-					{isHovered ? (
-						<video className="logo" autoPlay muted loop>
-							<source src={MF_Logo} type="video/mp4" />
-							Your browser does not support the video tag.
-						</video>
-					) : (
-						<img
-							src={MorseFusionLogo}
-							alt="Logo Thumbnail"
-							className="logo"
-						/>
-					)}
+					INTERVIEW NOW
 				</div>
 				<div className="input-group">
 					<input

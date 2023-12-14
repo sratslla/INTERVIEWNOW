@@ -22,9 +22,11 @@
 	height: 50%;
 	width: 50%;
 	position: relative;
-	top: 0%;
+	color: white;
+	font-size: xx-large;
+	top: 50%;
 	left: 50%;
-	transform: translate(-50%, 0%);
+	transform: translate(-40%, -50%);
 	justify-content: center;
 	align-items: center;
 }

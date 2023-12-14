@@ -29,62 +29,76 @@ function getAllConnectedClients(roomId) {
 
 io.on("connection", (socket) => {
 	console.log("socket connected", socket.id);
-
-	socket.on(ACTIONS.JOIN, ({ roomId, userName, offer }) => {
+	socket.on(ACTIONS.JOIN, ({ roomId, userName }) => {
 		userSocketMap[socket.id] = userName;
 		socket.join(roomId);
 		const clients = getAllConnectedClients(roomId);
+		console.log(roomId);
+		console.log(socket.id, "----", userName, "Joined");
 		clients.forEach(({ socketId }) => {
 			io.to(socketId).emit(ACTIONS.JOINED, {
 				clients,
 				userName,
 				socketId: socket.id,
 			});
-			io.to(roomId).emit("incomming:call", {
-				from: socket.id,
-				offer,
-			});
-			console.log("offerasdfadsf", offer);
+		});
+	});
+
+	socket.on("join_room", (roomId) => {
+		const clients = getAllConnectedClients(roomId);
+		console.log(clients);
+		const usersInThisRoom = clients.filter((id) => id !== socket.id);
+		console.log("usersInThisRoom", usersInThisRoom);
+		socket.emit("all_users", usersInThisRoom);
+	});
+
+	socket.on("sending signal", (payload) => {
+		io.to(payload.userToSignal).emit("user_joined", {
+			signal: payload.signal,
+			callerID: payload.callerID,
+		});
+	});
+
+	socket.on("returning signal", (payload) => {
+		io.to(payload.callerID).emit("receiving returned signal", {
+			signal: payload.signal,
+			id: socket.id,
 		});
 	});
 
 	socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
 		socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
+		console.log("COde Changed", code);
 	});
 
 	socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
 		io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
+		console.log("Synch COde", code, socketId);
 	});
 
-	// Video Call
-	// socket.on(ACTIONS.CALL, ({ roomId, offer }) => {
-	// 	io.to(roomId).emit("incomming:call", {
-	// 		from: socket.id,
-	// 		offer,
-	// 	});
-	// });
-
-	socket.on("call:accepted", ({ to, ans }) => {
-		console.log("from", socket.id);
-		console.log("ans", ans);
-		io.to(to).emit("call:accepted", {
-			from: socket.id,
-			ans: ans,
-		});
+	socket.on("canvas-data", ({ base64ImageData, roomId }) => {
+		console.log("WB Data -", base64ImageData);
+		io.to(roomId).emit("canvas-data", { base64ImageData });
 	});
 
-	socket.on("peer:nego:needed", ({ to, offer }) => {
-		io.to(to).emit("peer:nego:needed", {
-			from: socket.id,
-			offer,
-		});
+	socket.on(ACTIONS.RUN_CODE, ({ roomId }) => {
+		console.log("code is running in server");
+		io.to(roomId).emit(ACTIONS.RUN_CODE);
 	});
 
-	socket.on("peer:nego:done", ({ to, ans }) => {
-		io.to(to).emit("peer:nego:final", {
-			from: socket.id,
-			ans,
-		});
+	socket.on(ACTIONS.OUTPUT_CLOSED, ({ roomId }) => {
+		io.to(roomId).emit(ACTIONS.OUTPUT_CLOSED);
+	});
+
+	socket.on(ACTIONS.CODE_COMPILED, ({ roomId, socket_output }) => {
+		console.log("code is done in server");
+		socket.to(roomId).emit(ACTIONS.CODE_COMPILED, { socket_output });
+	});
+
+	// Chat Implementation
+	socket.on("send_message", ({ roomId, messageData }) => {
+		socket.to(roomId).emit("receive_message", { messageData });
+		console.log("message found in server", messageData);
 	});
 
 	socket.on("disconnecting", () => {

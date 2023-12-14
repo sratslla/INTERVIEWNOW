@@ -1,0 +1,32 @@
+.wb-container {
+	position: fixed;
+	min-height: calc(90vh - 20px);
+	min-width: calc(80vw - 20px);
+	top: 10vh;
+	left: 0vw;
+	background: linear-gradient(45deg, #03a9f4, #4caf50);
+}
+
+.color-picker-container {
+	text-align: center;
+	display: inline;
+	color: white;
+}
+
+.brushsize-container {
+	display: inline;
+	color: white;
+	margin-left: 12px;
+}
+
+.tools-section {
+	text-align: center;
+}
+
+.board-container {
+	width: 90%;
+	height: 90%;
+	margin: auto;
+	margin-top: 1%;
+	background: white;
+}

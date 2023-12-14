@@ -1,0 +1,9 @@
+.board {
+	min-height: calc(70vh - 20px);
+	min-width: calc(50vw - 20px);
+}
+
+.sketch {
+	min-height: calc(70vh - 20px);
+	min-width: calc(50vw - 20px);
+}

@@ -483,8 +483,8 @@ const EditorPage = () => {
 					muted
 					style={{ width: "20vw", height: "25vh" }}
 				/>
-				{peers.map((peer) => {
-					return <Videoo key={peer.peerID} peer={peer} />;
+				{peers.map((peer, index) => {
+					return <Videoo key={index} peer={peer} />;
 				})}
 			</div>
 			<div className="mf-bottom-button">

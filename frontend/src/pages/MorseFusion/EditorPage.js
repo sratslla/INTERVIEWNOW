@@ -4,23 +4,23 @@ import Client from "../../Components/Editor/Client";
 import Editor from "../../Components/Editor/Editor";
 import { language_options } from "../../Components/Editor/languageOptions";
 import axios from "axios";
-import { BsArrowBarUp, BsChatSquareText } from "react-icons/bs";
-import { IoSettingsSharp } from "react-icons/io5";
+import { BsChatSquareText } from "react-icons/bs";
+// import { IoSettingsSharp } from "react-icons/io5";
 import { FaChalkboardUser } from "react-icons/fa6";
 import { MdOutlineCancel } from "react-icons/md";
 import Select from "react-select";
-import {
-	CiVideoOn,
-	CiVideoOff,
-	CiMicrophoneOn,
-	CiMicrophoneOff,
-} from "react-icons/ci";
+// import {
+// 	CiVideoOn,
+// 	CiVideoOff,
+// 	CiMicrophoneOn,
+// 	CiMicrophoneOff,
+// } from "react-icons/ci";
 import ReactPlayer from "react-player";
 import { initSocket } from "../../socket";
 import ACTIONS, { JOIN } from "./Actions";
 import Peer from "simple-peer";
 import LoadingBar from "react-top-loading-bar";
-import styled from "styled-components";
+// import styled from "styled-components";
 // import peer from "../../service/peer";
 import {
 	Navigate,
@@ -48,10 +48,10 @@ const Videoo = (props) => {
 	);
 };
 
-const videoConstraints = {
-	height: window.innerHeight / 2,
-	width: window.innerWidth / 2,
-};
+// const videoConstraints = {
+// 	height: window.innerHeight / 2,
+// 	width: window.innerWidth / 2,
+// };
 const dropDownOptions = [
 	{ value: language_options[0].id, label: language_options[0].name },
 	{ value: language_options[1].id, label: language_options[1].name },
@@ -72,8 +72,8 @@ const EditorPage = () => {
 	const [whiteBoardOpen, setWhiteBoardOpen] = useState(false);
 	const [outPutOpen, setOutPutOpen] = useState(false);
 	const [output, setOutput] = useState("");
-	const [videoOn, setVideoOn] = useState(true);
-	const [micOn, setMicOn] = useState(true);
+	// const [videoOn, setVideoOn] = useState(true);
+	// const [micOn, setMicOn] = useState(true);
 	const [language_id, setLanguage_id] = useState(63);
 	const [language_name, setLanguage_name] = useState("javascript");
 
@@ -83,8 +83,8 @@ const EditorPage = () => {
 
 	const [progress, setProgress] = useState(0);
 
-	const [username, setUsername] = useState("");
-	const [room, setRoom] = useState("");
+	// const [username, setUsername] = useState("");
+	// const [room, setRoom] = useState("");
 
 	useEffect(() => {
 		const init = async () => {

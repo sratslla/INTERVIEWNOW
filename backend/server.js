@@ -46,9 +46,9 @@ io.on("connection", (socket) => {
 
 	socket.on("join_room", (roomId) => {
 		const clients = getAllConnectedClients(roomId);
-		console.log(clients);
+		// console.log(clients);
 		const usersInThisRoom = clients.filter((id) => id !== socket.id);
-		console.log("usersInThisRoom", usersInThisRoom);
+		// console.log("usersInThisRoom", usersInThisRoom);
 		socket.emit("all_users", usersInThisRoom);
 	});
 
@@ -68,21 +68,21 @@ io.on("connection", (socket) => {
 
 	socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
 		socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
-		console.log("COde Changed", code);
+		// console.log("COde Changed", code);
 	});
 
 	socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
 		io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
-		console.log("Synch COde", code, socketId);
+		// console.log("Synch COde", code, socketId);
 	});
 
 	socket.on("canvas-data", ({ base64ImageData, roomId }) => {
-		console.log("WB Data -", base64ImageData);
+		// console.log("WB Data -", base64ImageData);
 		io.to(roomId).emit("canvas-data", { base64ImageData });
 	});
 
 	socket.on(ACTIONS.RUN_CODE, ({ roomId }) => {
-		console.log("code is running in server");
+		// console.log("code is running in server");
 		io.to(roomId).emit(ACTIONS.RUN_CODE);
 	});
 
@@ -91,14 +91,14 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on(ACTIONS.CODE_COMPILED, ({ roomId, socket_output }) => {
-		console.log("code is done in server");
+		// console.log("code is done in server");
 		socket.to(roomId).emit(ACTIONS.CODE_COMPILED, { socket_output });
 	});
 
 	// Chat Implementation
 	socket.on("send_message", ({ roomId, messageData }) => {
 		socket.to(roomId).emit("receive_message", { messageData });
-		console.log("message found in server", messageData);
+		// console.log("message found in server", messageData);
 	});
 
 	socket.on("disconnecting", () => {

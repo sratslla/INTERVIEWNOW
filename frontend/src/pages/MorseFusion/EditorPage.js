@@ -20,7 +20,6 @@ import { initSocket } from "../../socket";
 import ACTIONS, { JOIN } from "./Actions";
 import Peer from "simple-peer";
 import LoadingBar from "react-top-loading-bar";
-import styled from "styled-components";
 // import peer from "../../service/peer";
 import {
 	Navigate,

@@ -1,8 +1,10 @@
 # InterviewNow Project
 
 Welcome to InterviewNow, a collaborative coding platform designed to streamline your interview process. This project leverages the power of ReactJS, WebRTC, Socket.IO, and other technologies to provide a seamless and efficient experience for conducting interviews, including video calls, collaborative coding, a chat box, whiteboard functionality, and live code running capabilities.
-![1](https://github.com/sratslla/INTERVIEWNOW/assets/93277471/ad8e4af4-3b13-421d-8f73-063b632409e0)
 
+https://github.com/user-attachments/assets/fd255c3a-8584-4d23-a1da-2bd3136cfa20
+
+![1](https://github.com/sratslla/INTERVIEWNOW/assets/93277471/ad8e4af4-3b13-421d-8f73-063b632409e0)
 ## Table of Contents
 
 - [Features](#features)

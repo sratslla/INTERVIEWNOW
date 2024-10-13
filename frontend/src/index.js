@@ -3,16 +3,14 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import reportWebVitals from "./reportWebVitals";
-// import Home from "./pages/Home/Home";
-import MorseFusion from "./pages/MorseFusion/MorseFusion";
-import EditorPage from "./pages/MorseFusion/EditorPage";
-// import MorseResume from "./pages/MorseResume/MorseResume";
-// import MorseSync from "./pages/MorseSync/MorseSync";
+import Home from "./pages/Home";
+import EditorPage from "./pages/EditorPage";
+import { Analytics } from "@vercel/analytics/react";
 
 const router = createBrowserRouter([
 	{
 		path: "/",
-		element: <MorseFusion />,
+		element: <Home />,
 	},
 	{
 		path: "/Editor/:roomId",
@@ -35,6 +33,7 @@ root.render(
 				}}
 			></Toaster>
 		</div>
+		<Analytics />
 		<RouterProvider router={router} />
 	</div>
 );

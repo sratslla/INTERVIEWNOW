@@ -8,7 +8,7 @@ import "codemirror/mode/python/python";
 import "codemirror/mode/go/go";
 import "codemirror/addon/edit/closetag";
 import "codemirror/addon/edit/closebrackets";
-import ACTIONS from "../../pages/MorseFusion/Actions";
+import ACTIONS from "../../Actions";
 
 const Editor = ({ socketRef, roomId, language_name, onCodeChange }) => {
 	const editorRef = useRef(null);

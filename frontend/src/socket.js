@@ -7,5 +7,6 @@ export const initSocket = async () => {
 		timeout: 10000,
 		transports: ["websocket"],
 	};
-	return io("https://sea-lion-app-ftkgr.ondigitalocean.app/", options);
+	console.log(process.env.REACT_APP_BACKEND_URL);
+	return io(process.env.REACT_APP_BACKEND_URL, options);
 };

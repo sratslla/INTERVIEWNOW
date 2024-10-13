@@ -35,6 +35,7 @@ root.render(
 		</div>
 		<Analytics />
 		<RouterProvider router={router} />
+		<Analytics />
 	</div>
 );
 reportWebVitals();

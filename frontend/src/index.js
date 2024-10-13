@@ -3,11 +3,9 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import reportWebVitals from "./reportWebVitals";
-// import Home from "./pages/Home/Home";
 import MorseFusion from "./pages/MorseFusion/MorseFusion";
 import EditorPage from "./pages/MorseFusion/EditorPage";
-// import MorseResume from "./pages/MorseResume/MorseResume";
-// import MorseSync from "./pages/MorseSync/MorseSync";
+import { Analytics } from "@vercel/analytics/react";
 
 const router = createBrowserRouter([
 	{
@@ -36,6 +34,7 @@ root.render(
 			></Toaster>
 		</div>
 		<RouterProvider router={router} />
+		<Analytics />
 	</div>
 );
 reportWebVitals();

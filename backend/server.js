@@ -4,16 +4,14 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { createClient } = require("redis");
 const { createAdapter } = require("@socket.io/redis-adapter");
-const redis = require("redis");
 const ACTIONS = require("./Actions");
-const exp = require("constants");
-const path = require("path");
+require("dotenv").config();
 
 const server = http.createServer(app);
 const io = new Server(server);
 
 const pubClient = createClient({
-	url: "rediss://default:AVNS_uo_-ZCJENXIPa9fkw7C@db-caching-blr1-61288-do-user-15380055-0.d.db.ondigitalocean.com:25061",
+	url: process.env.REDIS_URL,
 });
 
 const subClient = pubClient.duplicate();

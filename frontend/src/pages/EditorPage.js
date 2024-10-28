@@ -33,30 +33,34 @@ import Chat from "../Components/Chat/Chat";
 
 const Videoo = (props) => {
 	const ref = useRef();
-
 	useEffect(() => {
-		if (props.peer.peer) {
-			props.peer.peer.on("stream", (stream) => {
+		if (props.peer) {
+			props.peer.on("stream", (stream) => {
 				ref.current.srcObject = stream;
 			});
 		}
-	}, [props.peer.peer]);
+	}, [props.peer]);
+
+	const handleError = (event) => {
+		alert("Error playing video: " + event.message);
+	};
 
 	return (
-		<video ref={ref} autoPlay style={{ width: "20vw", height: "25vh" }} />
+		<>
+			<video
+				ref={ref}
+				autoPlay
+				onError={handleError}
+				style={{ width: "20vw", height: "25vh" }}
+			/>
+		</>
 	);
 };
 
-const videoConstraints = {
-	height: window.innerHeight / 2,
-	width: window.innerWidth / 2,
-};
 const dropDownOptions = [
 	{ value: language_options[0].id, label: language_options[0].name },
 	{ value: language_options[1].id, label: language_options[1].name },
 	{ value: language_options[2].id, label: language_options[2].name },
-	// { value: language_options[3].id, label: language_options[3].name },
-	// { value: language_options[4].id, label: language_options[4].name },
 ];
 
 const EditorPage = () => {
@@ -92,8 +96,8 @@ const EditorPage = () => {
 			socketRef.current.on("connect_failed", (err) => handleErrors(err));
 
 			const handleErrors = (e) => {
-				// console.log("socket error", e);
 				toast.error("Socket connection failed, try again later");
+				console.log("Reason for Socket failure", e);
 				reactNavigator("/");
 			};
 
@@ -108,15 +112,12 @@ const EditorPage = () => {
 				({ clients, userName, socketId }) => {
 					if (userName !== location.state?.userName) {
 						toast.success(`${userName} joined the room`);
-						// console.log(`${userName} joined the room`);
 					}
 					setClients(clients);
 					socketRef.current.emit(ACTIONS.SYNC_CODE, {
 						code: codeRef.current,
 						socketId,
 					});
-					// console.log("Code Sent", codeRef.current);
-					// console.log("Socket Joined", userName);
 				}
 			);
 
@@ -124,7 +125,6 @@ const EditorPage = () => {
 				setOutPutOpen(true);
 				setOutput("Processing");
 				setProgress(progress + 30);
-				// console.log("DONE");
 			});
 			socketRef.current.on(ACTIONS.OUTPUT_CLOSED, () => {
 				setOutPutOpen(false);
@@ -132,35 +132,26 @@ const EditorPage = () => {
 			socketRef.current.on(ACTIONS.CODE_COMPILED, ({ socket_output }) => {
 				setOutput(socket_output);
 				setProgress(100);
-				// console.log("OUtput received in sockets", socket_output);
 			});
 			navigator.mediaDevices
 				.getUserMedia({ video: true, audio: true })
 				.then((stream) => {
 					userVideo.current.srcObject = stream;
-					// console.log("hsjkdfhakjsdhfjkasdf");
 					socketRef.current.emit("join_room", roomId);
 					socketRef.current.on("all_users", (users) => {
 						const peers = [];
-						// console.log(socketRef.current.id);
-						// console.log(users);
 						users.forEach((userID) => {
-							if (userID.socketId !== socketRef.current.id) {
-								const peer = createPeer(
-									userID.socketId,
-									socketRef.current.id,
-									stream
-								);
-								peersRef.current.push({
-									peerID: userID.socketId,
-									peer,
-								});
-								peers.push({
-									peerID: userID.socketId,
-									peer,
-								});
-								peers.push(peer);
-							}
+							const peer = createPeer(
+								userID.userName,
+								userID.socketId,
+								socketRef.current.id,
+								stream
+							);
+							peersRef.current.push({
+								peerID: userID.socketId,
+								peer,
+							});
+							peers.push(peer);
 						});
 						setPeers(peers);
 					});
@@ -175,10 +166,7 @@ const EditorPage = () => {
 							peerID: payload.callerID,
 							peer,
 						});
-						setPeers((prevPeers) => [
-							...prevPeers,
-							{ peerID: payload.callerID, peer },
-						]);
+						setPeers((prevPeers) => [...prevPeers, peer]);
 					});
 
 					socketRef.current.on(
@@ -223,9 +211,9 @@ const EditorPage = () => {
 			socketRef.current.off(ACTIONS.RUN_CODE);
 			socketRef.current.off(ACTIONS.CODE_COMPILED);
 		};
-	}, [roomId]);
+	}, []);
 
-	function createPeer(userToSignal, callerID, stream) {
+	function createPeer(RecieverName, userToSignal, callerID, stream) {
 		const peer = new Peer({
 			initiator: true,
 			trickle: false,
@@ -285,8 +273,6 @@ const EditorPage = () => {
 			source_code: btoa(codeRef.current),
 			stdin: "",
 		};
-		// console.log("Run Code");
-		// console.log(codeRef.current);
 
 		const options = {
 			method: "POST",
@@ -296,15 +282,12 @@ const EditorPage = () => {
 				"content-type": "application/json",
 				"Content-Type": "application/json",
 				"X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-				"X-RapidAPI-Key":
-					"843d11d34amshec8a22d59e66cb3p16c0a1jsn8f297096e12a",
+				"X-RapidAPI-Key": process.env.REACT_APP_JUDGEO_KEY,
 			},
 			data: formData,
 		};
-		// console.log(options);
 
 		axios.request(options).then(function (response) {
-			// console.log("res.data", response.data);
 			const token = response.data.token;
 			checkStatus(token);
 			setProgress(progress + 30);
@@ -352,9 +335,7 @@ const EditorPage = () => {
 			} else {
 				// setProcessing(false);
 				// setOutputDetails(response.data);
-				// showSuccessToast(`Compiled Successfully!`);
-				// console.log("response.data", response.data);
-				// console.log(atob(response.data.stdout));
+				// showSuccessToast(`Compiled Successfully!`);;
 				setOutput(atob(response.data.stdout));
 				let socket_output = atob(response.data.stdout);
 				socketRef.current.emit(ACTIONS.CODE_COMPILED, {
@@ -376,8 +357,6 @@ const EditorPage = () => {
 	}
 
 	const onSelectChange = (selectedOption) => {
-		// console.log("language changed");
-		// console.log(selectedOption);
 		setLanguage_id(selectedOption.value);
 		setLanguage_name(selectedOption.label);
 	};
@@ -475,14 +454,15 @@ const EditorPage = () => {
 				<div className="output">{output}</div>
 			</div>
 			<div className="mf-video-container">
+				<div style={{ color: "white" }}>{location.state?.userName}</div>
 				<video
 					ref={userVideo}
 					autoPlay
 					muted
 					style={{ width: "20vw", height: "25vh" }}
 				/>
-				{peers.map((peer) => {
-					return <Videoo key={peer.peerID} peer={peer} />;
+				{peers.map((peer, index) => {
+					return <Videoo key={index} peer={peer} />;
 				})}
 			</div>
 			<div className="mf-bottom-button">

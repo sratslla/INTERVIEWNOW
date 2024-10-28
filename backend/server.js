@@ -2,39 +2,73 @@ const express = require("express");
 const app = express();
 const http = require("http");
 const { Server } = require("socket.io");
+const { createClient } = require("redis");
+const { createAdapter } = require("@socket.io/redis-adapter");
+const redis = require("redis");
 const ACTIONS = require("./Actions");
-const { log } = require("console");
 const exp = require("constants");
 const path = require("path");
 
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static("build"));
-// app.use((req, res, next) => {
-// 	res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
+const pubClient = createClient({
+	url: "rediss://default:AVNS_uo_-ZCJENXIPa9fkw7C@db-caching-blr1-61288-do-user-15380055-0.d.db.ondigitalocean.com:25061",
+});
 
-const userSocketMap = {};
-function getAllConnectedClients(roomId) {
-	return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
-		(socketId) => {
-			return {
-				socketId,
-				userName: userSocketMap[socketId],
-			};
-		}
-	);
+const subClient = pubClient.duplicate();
+
+(async () => {
+	try {
+		await pubClient.connect();
+		await subClient.connect();
+		console.log("Redis clients connected");
+
+		io.adapter(createAdapter(pubClient, subClient));
+	} catch (error) {
+		console.error("Error connecting Redis clients:", error);
+	}
+})();
+
+const USER_MAP_KEY = "userSocketMap";
+const ROOM_MAP_KEY = "roomSocketMap";
+
+async function addUserToRoom(socketId, userName, roomId) {
+	await pubClient.hSet(USER_MAP_KEY, socketId, userName);
+	await pubClient.sAdd(`${ROOM_MAP_KEY}:${roomId}`, socketId);
+}
+
+async function removeUserFromRoom(socketId, roomId) {
+	await pubClient.hDel(USER_MAP_KEY, socketId);
+	await pubClient.sRem(`${ROOM_MAP_KEY}:${roomId}`, socketId);
+}
+async function getUser(socketId) {
+	return await pubClient.hGet(USER_MAP_KEY, socketId);
+}
+
+async function getAllConnectedClients(roomId) {
+	const socketIds = await pubClient.sMembers(`${ROOM_MAP_KEY}:${roomId}`);
+	const userNames = await pubClient.hmGet(USER_MAP_KEY, socketIds);
+	return socketIds.map((socketId, index) => ({
+		socketId,
+		userName: userNames[index],
+	}));
 }
 
 io.on("connection", (socket) => {
-	console.log("socket connected", socket.id);
-	socket.on(ACTIONS.JOIN, ({ roomId, userName }) => {
-		userSocketMap[socket.id] = userName;
+	socket.on(ACTIONS.JOIN, async ({ roomId, userName }) => {
+		await addUserToRoom(socket.id, userName, roomId);
 		socket.join(roomId);
-		const clients = getAllConnectedClients(roomId);
-		console.log(roomId);
-		console.log(socket.id, "----", userName, "Joined");
+		const clients = await getAllConnectedClients(roomId);
+		console.log(
+			socket.id,
+			"----",
+			userName,
+			"roomID",
+			roomId,
+			"Joined on Port",
+			PORT
+		);
 		clients.forEach(({ socketId }) => {
 			io.to(socketId).emit(ACTIONS.JOINED, {
 				clients,
@@ -44,11 +78,11 @@ io.on("connection", (socket) => {
 		});
 	});
 
-	socket.on("join_room", (roomId) => {
-		const clients = getAllConnectedClients(roomId);
-		// console.log(clients);
-		const usersInThisRoom = clients.filter((id) => id !== socket.id);
-		// console.log("usersInThisRoom", usersInThisRoom);
+	socket.on("join_room", async (roomId) => {
+		const clients = await getAllConnectedClients(roomId);
+		const usersInThisRoom = clients.filter(
+			(id) => id.socketId !== socket.id
+		);
 		socket.emit("all_users", usersInThisRoom);
 	});
 
@@ -68,21 +102,17 @@ io.on("connection", (socket) => {
 
 	socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
 		socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
-		// console.log("COde Changed", code);
 	});
 
 	socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
 		io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
-		// console.log("Synch COde", code, socketId);
 	});
 
 	socket.on("canvas-data", ({ base64ImageData, roomId }) => {
-		// console.log("WB Data -", base64ImageData);
 		io.to(roomId).emit("canvas-data", { base64ImageData });
 	});
 
 	socket.on(ACTIONS.RUN_CODE, ({ roomId }) => {
-		// console.log("code is running in server");
 		io.to(roomId).emit(ACTIONS.RUN_CODE);
 	});
 
@@ -91,25 +121,24 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on(ACTIONS.CODE_COMPILED, ({ roomId, socket_output }) => {
-		// console.log("code is done in server");
 		socket.to(roomId).emit(ACTIONS.CODE_COMPILED, { socket_output });
 	});
 
 	// Chat Implementation
 	socket.on("send_message", ({ roomId, messageData }) => {
 		socket.to(roomId).emit("receive_message", { messageData });
-		// console.log("message found in server", messageData);
 	});
 
-	socket.on("disconnecting", () => {
+	socket.on("disconnecting", async () => {
 		const rooms = [...socket.rooms];
+		const userName = await getUser(socket.id);
 		rooms.forEach((roomId) => {
 			socket.in(roomId).emit(ACTIONS.DISCONNECTED, {
 				socketId: socket.id,
 				userName: userSocketMap[socket.id],
 			});
 		});
-		delete userSocketMap[socket.id];
+		await removeUserFromRoom(socket.id, roomId);
 		socket.leave();
 	});
 });

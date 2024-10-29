@@ -16,6 +16,14 @@ const pubClient = createClient({
 
 const subClient = pubClient.duplicate();
 
+pubClient.on("error", (err) => {
+	console.error("Redis Pub Client Error:", err);
+});
+
+subClient.on("error", (err) => {
+	console.error("Redis Sub Client Error:", err);
+});
+
 (async () => {
 	try {
 		await pubClient.connect();
@@ -39,6 +47,11 @@ async function addUserToRoom(socketId, userName, roomId) {
 async function removeUserFromRoom(socketId, roomId) {
 	await pubClient.hDel(USER_MAP_KEY, socketId);
 	await pubClient.sRem(`${ROOM_MAP_KEY}:${roomId}`, socketId);
+
+	const roomSize = await pubClient.sCard(`${ROOM_MAP_KEY}:${roomId}`);
+	if (roomSize === 0) {
+		await pubClient.del(`${ROOM_MAP_KEY}:${roomId}`); // Delete the room if empty
+	}
 }
 async function getUser(socketId) {
 	return await pubClient.hGet(USER_MAP_KEY, socketId);
@@ -130,13 +143,13 @@ io.on("connection", (socket) => {
 	socket.on("disconnecting", async () => {
 		const rooms = [...socket.rooms];
 		const userName = await getUser(socket.id);
-		rooms.forEach((roomId) => {
+		rooms.forEach(async (roomId) => {
 			socket.in(roomId).emit(ACTIONS.DISCONNECTED, {
 				socketId: socket.id,
-				userName: userSocketMap[socket.id],
+				userName: userName,
 			});
+			await removeUserFromRoom(socket.id, roomId);
 		});
-		await removeUserFromRoom(socket.id, roomId);
 		socket.leave();
 	});
 });

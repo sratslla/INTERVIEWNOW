@@ -59,6 +59,8 @@ async function getUser(socketId) {
 
 async function getAllConnectedClients(roomId) {
 	const socketIds = await pubClient.sMembers(`${ROOM_MAP_KEY}:${roomId}`);
+	console.log(socketIds.length);
+	if (socketIds.length === 0) return [];
 	const userNames = await pubClient.hmGet(USER_MAP_KEY, socketIds);
 	return socketIds.map((socketId, index) => ({
 		socketId,

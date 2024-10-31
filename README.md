@@ -3,12 +3,8 @@
 Welcome to InterviewNow, a collaborative coding platform designed to streamline your interview process. This project leverages the power of ReactJS, WebRTC, Socket.IO, and other technologies to provide a seamless and efficient experience for conducting interviews, including video calls, collaborative coding, a chat box, whiteboard functionality, and live code running capabilities.
 
 https://github.com/user-attachments/assets/fd255c3a-8584-4d23-a1da-2bd3136cfa20
-## Table of Contents
 
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-
-##Scaling
+## Scaling
 8500 concurrent Rooms with 3 users each. Check out the load-test.js file under load testing.
 ![image](https://github.com/user-attachments/assets/0ca0e3a8-13a6-403f-ad99-9ce5696d5f3a)
 

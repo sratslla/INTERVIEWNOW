@@ -4,11 +4,9 @@ Welcome to InterviewNow, a collaborative coding platform designed to streamline 
 
 https://github.com/user-attachments/assets/fd255c3a-8584-4d23-a1da-2bd3136cfa20
 
-![1](https://github.com/sratslla/INTERVIEWNOW/assets/93277471/ad8e4af4-3b13-421d-8f73-063b632409e0)
-## Table of Contents
-
-- [Features](#features)
-- [Technologies Used](#technologies-used)
+## Scaling
+8500 concurrent Rooms with 3 users each. Check out the load-test.js file under load testing.
+![image](https://github.com/user-attachments/assets/0ca0e3a8-13a6-403f-ad99-9ce5696d5f3a)
 
 ## Features
 
@@ -22,13 +20,14 @@ Experience real-time collaborative coding with the collaborative coding area, ma
 Facilitate communication through a chat box, allowing interviewers and candidates to exchange messages during the interview process.
 
 ### 4. Whiteboard
-Enhance collaboration with a virtual whiteboard, enabling candidates to illustrate their thought process and solve problems visually.
+Enhance collaboration with a virtual whiteboard, enabling candidates to illustrate their thought processes and solve problems visually.
 
 ### 5. Code Running Capabilities
-Evaluate code on-the-fly by running it within the platform, providing a dynamic and interactive coding experience.
+Evaluate code on the fly by running it within the platform, providing a dynamic and interactive coding experience.
 
 ## Technologies Used
 
 - **ReactJS:** A JavaScript library for building user interfaces, providing a responsive and interactive front-end.
 - **WebRTC:** Enables real-time communication for video calls, ensuring a smooth and reliable interview experience.
 - **Socket.IO:** Facilitates real-time bidirectional event-based communication, powering the collaborative coding area and chat box.
+- **Redis** Redis Pub/Sub is used for the communication between servers.

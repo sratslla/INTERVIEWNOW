@@ -4,3 +4,7 @@ load-testing/node_modules/
 node_modules
 frontend/.env
 backend/.env
+frontend/build/
+.DS_Store
+*.log
+.env

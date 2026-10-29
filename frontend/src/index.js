@@ -1,3 +1,4 @@
+import "./polyfills";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -20,22 +21,20 @@ const router = createBrowserRouter([
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-	<div>
-		<div>
-			<Toaster
-				position="top-right"
-				toastOptions={{
-					success: {
-						theme: {
-							primary: "#4aed88",
-						},
+	<>
+		<Toaster
+			position="top-right"
+			toastOptions={{
+				success: {
+					theme: {
+						primary: "#4aed88",
 					},
-				}}
-			></Toaster>
-		</div>
+				},
+			}}
+		/>
 		<Analytics />
 		<RouterProvider router={router} />
-		<Analytics />
-	</div>
+	</>
 );
+
 reportWebVitals();

@@ -1,33 +1,52 @@
-# InterviewNow Project
+# InterviewNow
 
-Welcome to InterviewNow, a collaborative coding platform designed to streamline your interview process. This project leverages the power of ReactJS, WebRTC, Socket.IO, and other technologies to provide a seamless and efficient experience for conducting interviews, including video calls, collaborative coding, a chat box, whiteboard functionality, and live code running capabilities.
+Collaborative coding interviews: live editor, video (WebRTC), chat, whiteboard, and Judge0 code execution.
 
-https://github.com/user-attachments/assets/fd255c3a-8584-4d23-a1da-2bd3136cfa20
+## Stack
 
-## Scaling
-8500 concurrent Rooms with 3 users each. Check out the load-test.js file under load testing.
-![image](https://github.com/user-attachments/assets/0ca0e3a8-13a6-403f-ad99-9ce5696d5f3a)
+- **Frontend:** React (CRA), CodeMirror, simple-peer, Socket.IO client
+- **Backend:** Express + Socket.IO signaling / presence
+- **Scale (optional):** Redis + `@socket.io/redis-adapter`
+- **Code run:** Judge0 CE via RapidAPI
+
+## Quick start
+
+### Backend
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+`REDIS_URL` is optional. Without it the server uses in-memory presence (fine for one instance).
+
+### Frontend
+
+```bash
+cd frontend
+cp .env.example .env
+# set REACT_APP_BACKEND_URL and REACT_APP_JUDGEO_KEY
+npm install
+npm start
+```
+
+Open `http://localhost:3000`, create a room, share the room ID.
 
 ## Features
 
-### 1. Video Call
-InterviewNow integrates WebRTC to enable smooth video calls, allowing seamless communication between interviewers and candidates.
+1. **Video call** — mesh WebRTC with mic/cam toggles, STUN, and cleanup on leave
+2. **Collaborative editor** — realtime CodeMirror sync + language switch (JS / Go / Python / C++ / Java)
+3. **Chat** — room messaging
+4. **Whiteboard** — shared canvas (no self-echo)
+5. **Run code** — Judge0 with proper error / stdout / stderr handling
+6. **Resizable sidebar** — drag the handle between editor and video/chat
 
-### 2. Collaborative Coding Area
-Experience real-time collaborative coding with the collaborative coding area, making it easy for both parties to work on code together.
+## Health check
 
-### 3. Chat Box
-Facilitate communication through a chat box, allowing interviewers and candidates to exchange messages during the interview process.
+`GET http://localhost:5000/health` → `{ ok, redis, store }`
 
-### 4. Whiteboard
-Enhance collaboration with a virtual whiteboard, enabling candidates to illustrate their thought processes and solve problems visually.
+## Load testing
 
-### 5. Code Running Capabilities
-Evaluate code on the fly by running it within the platform, providing a dynamic and interactive coding experience.
-
-## Technologies Used
-
-- **ReactJS:** A JavaScript library for building user interfaces, providing a responsive and interactive front-end.
-- **WebRTC:** Enables real-time communication for video calls, ensuring a smooth and reliable interview experience.
-- **Socket.IO:** Facilitates real-time bidirectional event-based communication, powering the collaborative coding area and chat box.
-- **Redis** Redis Pub/Sub is used for the communication between servers.
+See `load-testing/load-test.js` (set the server URL first). Stresses join + chat, not WebRTC media.

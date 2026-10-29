@@ -1,15 +1,12 @@
 {
-  "name": "load-testing",
-  "version": "1.0.0",
-  "main": "functions.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "socket.io-client": "^4.8.1",
-    "uuid": "^11.0.2"
-  }
+	"name": "interviewnow-load-testing",
+	"version": "1.0.0",
+	"main": "load-test.js",
+	"scripts": {
+		"start": "node load-test.js",
+		"test": "node load-test.js"
+	},
+	"dependencies": {
+		"socket.io-client": "^4.7.2"
+	}
 }

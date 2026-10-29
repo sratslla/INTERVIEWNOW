@@ -2,7 +2,6 @@ const ACTIONS = {
 	JOIN: "join",
 	JOINED: "joined",
 	DISCONNECTED: "disconnected",
-	CALL: "call",
 	CODE_CHANGE: "code-change",
 	SYNC_CODE: "sync-code",
 	LEAVE: "leave",
@@ -11,4 +10,4 @@ const ACTIONS = {
 	OUTPUT_CLOSED: "output-closed",
 };
 
-module.exports = ACTIONS;
+export default ACTIONS;

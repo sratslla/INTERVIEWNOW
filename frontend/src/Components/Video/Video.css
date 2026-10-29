@@ -1,22 +1,115 @@
-.mf-video-container {
-	min-height: 80vh;
-	min-width: 20vw;
+.video-panel {
 	display: flex;
 	flex-direction: column;
-	position: absolute;
-	top: 10vh;
-	left: 80vw;
-	justify-content: space-between;
-	align-items: center;
-	flex-wrap: wrap;
+	gap: 0.75rem;
+	height: 100%;
+	min-height: 0;
+	padding: 0.75rem;
+	background: linear-gradient(
+		180deg,
+		rgba(18, 28, 48, 0.95),
+		rgba(10, 14, 28, 0.98)
+	);
+	border-left: 1px solid rgba(27, 169, 76, 0.25);
 	overflow: hidden;
-	/* resize: both; */
 }
-.video {
-	height: 10vh;
-	width: 25vh;
-	border-radius: 8px;
-	background: red;
-	background: url(https://images.hindustantimes.com/tech/img/2022/01/22/960x540/Zoom_CC_Button_-_manual_1614250317606_1642848009719.jpg);
-	background-size: 100% 100%;
+
+.video-panel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	color: #e8f5e9;
+	font-family: "Syne", sans-serif;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	font-size: 0.75rem;
+}
+
+.video-controls {
+	display: flex;
+	gap: 0.4rem;
+}
+
+.media-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 0.55rem;
+	background: rgba(255, 255, 255, 0.06);
+	color: #fff;
+	font-size: 1.25rem;
+	cursor: pointer;
+	transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.media-btn:hover {
+	border-color: #1ba94c;
+}
+
+.media-btn.on {
+	color: #7dffa8;
+}
+
+.media-btn.off {
+	color: #ff8a80;
+	background: rgba(255, 82, 82, 0.12);
+}
+
+.media-error {
+	margin: 0;
+	padding: 0.5rem 0.65rem;
+	border-radius: 0.5rem;
+	background: rgba(255, 193, 7, 0.12);
+	color: #ffe082;
+	font-size: 0.75rem;
+	line-height: 1.35;
+}
+
+.video-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.video-tile {
+	position: relative;
+	flex: 0 0 auto;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	border-radius: 0.75rem;
+	overflow: hidden;
+	background: #0a1220;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-tile video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	background: #070b14;
+	display: block;
+}
+
+.video-label {
+	position: absolute;
+	left: 0.5rem;
+	bottom: 0.5rem;
+	padding: 0.2rem 0.5rem;
+	border-radius: 0.35rem;
+	background: rgba(0, 0, 0, 0.65);
+	color: #fff;
+	font-size: 0.7rem;
+	font-family: "IBM Plex Sans", sans-serif;
+	max-width: calc(100% - 1rem);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

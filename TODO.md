@@ -6,8 +6,10 @@ Todo:
 -   [x] Shift `Client.js` to its separate folder in Components.
 -   [x] Run the Code.
 -   [x] Add Option for Change in Language.
--   [ ] Make the section container resizable.
--   [ ] Add authentication may be using firebase.
+-   [x] Make the section container resizable.
+-   [x] Harden WebRTC (cleanup, mic/cam toggles, STUN, no peer leaks).
+-   [x] Use Redis for scalability (optional; in-memory fallback for single instance).
+-   [ ] Add authentication (e.g. Firebase / OAuth).
 -   [ ] Add support to schedule a meet.
--   [ ] Use Redis for scalability.
+-   [ ] Optional TURN servers for strict NATs / corporate networks.
 -   [ ] Learn more about WHEP WHIP.
